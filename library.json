@@ -17,18 +17,8 @@
 	  "maintainer": true
     }
   ],
-  "license": "GNU v3.0",
+  "license": "GPL-3.0-only",
   "homepage": "https://github.com/timkoers/MCP3421",  
   "frameworks": "Arduino",
   "platforms": "*"
 }
-
-name=MCP3421
-version=1.0.0
-author=Tim Koers<tim.koers@live.nl>
-maintainer=Tim Koers<tim.koers@live.nl>
-sentence=A library for the MCP3421 18-bit ADC
-paragraph=MCP3421 is 18-Bit Analog-to-Digital Converter.
-category=Sensors
-url=https://github.com/timkoers/MCP3421
-architectures=avr,esp8266,esp32
