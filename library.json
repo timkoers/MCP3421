@@ -1,6 +1,6 @@
 {
   "name": "MCP3421",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library for the MCP3421 18-bit ADC",
   "keywords": "MCP3421",
   "repository":

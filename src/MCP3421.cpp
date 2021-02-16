@@ -1,5 +1,7 @@
 #include "MCP3421.h"
 
+using namespace MCP3421_Constants;
+
 MCP3421::MCP3421(uint8_t inAddress){
 	mAddress = 0x68 | (inAddress & 0x7);
 	
@@ -12,7 +14,7 @@ MCP3421::MCP3421(uint8_t inAddress){
 void MCP3421::setConversionMode(ConversionMode_t inMode){
 	configChangePending = true;
 	
-	mMode = inMode;
+	mConversionMode = inMode;
 }
 
 void MCP3421::setSampleRate(SampleRate_t inSampleRate){
@@ -37,9 +39,9 @@ bool MCP3421::isConversionComplete(){
 	configChangePending = false;
 	
 	// The length depends on the SampleRate, which sets the resolution
-	size_t dataLength = (mSampleRate > 240_SPS ? 3 : 4);
+	size_t dataLength = (mSampleRate > SPS_240 ? 3 : 4);
 	
-	char inData[] = new char[dataLength]();
+	uint8_t inData[dataLength];
 	
 	ok = readData(inData, dataLength);
 	
@@ -49,9 +51,9 @@ bool MCP3421::isConversionComplete(){
 		uint8_t config = inData[dataLength -1];
 		
 		bool dataReady = (config & 0x80) >> 7;			
-		mConversionMode = (config & 0x10) >> 4;
-		mSampleRate = (config & 0x0C) >> 2;
-		mGain = (config & 0x3);
+		mConversionMode = (ConversionMode_t)(uint8_t)((config & 0x10) >> 4);
+		mSampleRate = (SampleRate_t)(uint8_t)((config & 0x0C) >> 2);
+		mGain = (Gain_t)(uint8_t)(config & 0x3);
 		
 		ok = dataReady;
 		
@@ -59,28 +61,28 @@ bool MCP3421::isConversionComplete(){
 			double value = (inData[0] << 24);
 
 			if(dataLength == 4){
-				value += (buffer[0] << 16) + (buffer[1] << 8) + buffer[2];
+				value += (inData[0] << 16) + (inData[1] << 8) + inData[2];
 			}else{
 				switch(mSampleRate){
-					case 240_SPS:	// 12-bits
+					case SPS_240:	// 12-bits
 					{
-						value += (buffer[0] << 10);
+						value += (inData[0] << 10);
 						break;
 					}
 					
-					case 60_SPS:	// 14-bits
+					case SPS_60:	// 14-bits
 					{
-						value += (buffer[0] << 12)
+						value += (inData[0] << 12);
 						break;
 					}
 					
-					case 15_SPS:	// 16-bits
+					case SPS_15:	// 16-bits
 					{
-						value += (buffer[0] << 14)
+						value += (inData[0] << 14);
 						break;
 					}
 				}				
-				value += (buffer[1] << 8) + buffer[2];
+				value += (inData[1] << 8) + inData[2];
 			}
 			lastValue = value;
 		}		
@@ -106,7 +108,7 @@ void MCP3421::writeData(uint8_t inData){
 	Wire.endTransmission();
 }
 
-void MCP3421::readData(uint8_t* outData, size_t length){
+bool MCP3421::readData(uint8_t* outData, size_t length){
 	Wire.requestFrom(mAddress, length);
 	
 	size_t bytesRead = 0;

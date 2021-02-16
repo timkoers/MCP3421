@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-namespace MCP3421{
+namespace MCP3421_Constants{
 	
 	typedef enum ConversionMode{
 		OneShot = 0,
@@ -14,10 +14,10 @@ namespace MCP3421{
 	} ConversionMode_t;
 	
 	typedef enum SampleRate{
-		240_SPS = 0x0, 	// 12 bits resolution
-		60_SPS = 0x1,	// 14 bits resolution
-		15_SPS = 0x2,	// 16 bits resolution
-		3_75_SPS = 0x3	// 18 bits resolution
+		SPS_240 = 0, 	// 12 bits resolution
+		SPS_60 = 0x1,	// 14 bits resolution
+		SPS_15 = 0x2,	// 16 bits resolution
+		SPS_3_75 = 0x3	// 18 bits resolution
 	}SampleRate_t;
 	
 	typedef enum Gain{
@@ -41,19 +41,19 @@ class MCP3421{
 		 @brief Sets the conversion mode
 		 @param [in] inMode the conversion mode that should be set
 		*/
-		void setConversionMode(ConversionMode_t inMode);
+		void setConversionMode(MCP3421_Constants::ConversionMode_t inMode);
 		
 		/**
 		 @brief Sets the sample rate
 		 @param [in] inSampleRate the sample rate that should be set
 		*/
-		void setSampleRate(SampleRate_t inSampleRate);
+		void setSampleRate(MCP3421_Constants::SampleRate_t inSampleRate);
 		
 		/**
 		 @brief Sets the gain
 		 @param [in] inGain the gain that should be used
 		*/
-		void setGain(Gain_t inGain);
+		void setGain(MCP3421_Constants::Gain_t inGain);
 		
 		/**
 		 @brief Processes the incomming data and requests for more
@@ -75,9 +75,9 @@ class MCP3421{
 	private:
 		uint8_t mAddress;
 	
-		ConversionMode_t mConversionMode = ConversionMode::Continuous;
-		SampleRate_t mSampleRate = SampleRate::240_SPS;
-		Gain_t mGain = Gain::x1;
+		MCP3421_Constants::ConversionMode_t mConversionMode = MCP3421_Constants::ConversionMode::Continuous;
+		MCP3421_Constants::SampleRate_t mSampleRate = MCP3421_Constants::SampleRate::SPS_240;
+		MCP3421_Constants::Gain_t mGain = MCP3421_Constants::Gain::x1;
 	
 		bool configChangePending = false;
 		
