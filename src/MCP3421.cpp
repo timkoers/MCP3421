@@ -48,7 +48,7 @@ bool MCP3421::isConversionComplete(){
 	if(ok){
 		// Call back the settings
 		// 0x9F == RDY | Continuous | 3.75 SPS | x8
-		uint8_t config = inData[dataLength -1];
+		uint8_t config = inData[dataLength - 1];
 		
 		bool dataReady = (config & 0x80) >> 7;			
 		mConversionMode = (ConversionMode_t)(uint8_t)((config & 0x10) >> 4);
@@ -57,33 +57,44 @@ bool MCP3421::isConversionComplete(){
 		
 		ok = dataReady;
 		
-		if(dataReady){
-			double value = (inData[0] << 24);
+		uint8_t numBits = 18; // Default
 
-			if(dataLength == 4){
-				value += (inData[0] << 16) + (inData[1] << 8) + inData[2];
-			}else{
-				switch(mSampleRate){
-					case SPS_240:	// 12-bits
-					{
-						value += (inData[0] << 10);
-						break;
-					}
-					
-					case SPS_60:	// 14-bits
-					{
-						value += (inData[0] << 12);
-						break;
-					}
-					
-					case SPS_15:	// 16-bits
-					{
-						value += (inData[0] << 14);
-						break;
-					}
-				}				
-				value += (inData[1] << 8) + inData[2];
+		if(dataReady){
+			uint32_t value = 0;
+
+			switch(mSampleRate){
+				case SPS_240:	// 12-bits
+				{
+					numBits = 12;
+					value = ((inData[0] & 0x0F) << 8) + inData[1];
+					break; 
+				}
+				
+				case SPS_60:	// 14-bits
+				{
+					numBits = 14;
+					value = ((inData[0] & 0x3F) << 8) + inData[1];
+					break;
+				}
+				
+				case SPS_15:	// 16-bits
+				{
+					numBits = 16;
+					value = ((inData[0] & 0xFF) << 8) + inData[1];
+					break;
+				}
+				case SPS_3_75:	// 18-bits
+				{
+					numBits = 18;
+					value = ((((uint16_t)inData[0]) & 0x03) << 16) + (((uint16_t)inData[1]) << 8) + inData[2];
+					break;
+				}
+			}			
+
+			if(value > (pow(2, numBits) / 2) - 1){
+				value -= pow(2, numBits) - 1 ;
 			}
+
 			lastValue = value;
 		}		
 	}
@@ -91,8 +102,43 @@ bool MCP3421::isConversionComplete(){
 	return ok;	
 }
 
-double MCP3421::getValue(){
+// Returns the last read raw value
+uint32_t MCP3421::getValue(){
 	return lastValue;
+}
+
+// Returns the last read voltage
+float MCP3421::getVoltage(){
+
+	uint8_t numBits = 18; // Default
+
+	switch(mSampleRate){
+		case SPS_240:	// 12-bits
+		{
+			numBits = 12;
+			break; 
+		}
+		
+		case SPS_60:	// 14-bits
+		{
+			numBits = 14;
+			break;
+		}
+		
+		case SPS_15:	// 16-bits
+		{
+			numBits = 16;
+			break;
+		}
+		case SPS_3_75:	// 18-bits
+		{
+			numBits = 18;
+			break;
+		}
+	}			
+
+	uint32_t value = getValue();
+	return (float(value) * 4.096) / float (pow(2, numBits));
 }
 
 void MCP3421::writeConfig(){

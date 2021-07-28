@@ -65,7 +65,13 @@ class MCP3421{
 		 @brief Returns the last value
 		 @param [out] value the last adc value read
 		*/
-		double getValue(); // Returns the ADC value
+		uint32_t getValue(); // Returns the ADC value
+
+		/**
+		 @brief Returns the last voltage value
+		 @param [out] value the last voltage value read
+		*/
+		float getVoltage(); // Returns the ADC voltage
 		
 	private:
 		void writeConfig();		
@@ -81,7 +87,7 @@ class MCP3421{
 	
 		bool configChangePending = false;
 		
-		double lastValue = 0.00;		
+		uint32_t lastValue = 0;
 };
 
 #endif // __MCP3421_H__
